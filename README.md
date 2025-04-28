@@ -1,9 +1,14 @@
-# FitTrack Lite
+## FitTrack Lite
 
-This is a Next.js fitness tracker application built in Firebase Studio.
+FitTrack Lite is your personal companion for tracking your fitness journey! Whether you're just starting out or you're a seasoned athlete, FitTrack Lite helps you monitor your workouts, set goals, and stay motivated.
 
 ## Features
 
+*   **Workout Logging:** Easily log your exercises, including the type of activity, duration, and intensity.
+*   **Calorie Tracking:** Automatically calculate the calories burned during your workouts.
+*   **Daily Goal Setting:** Define your daily targets for workout duration, distance, frequency, and calorie expenditure.
+*   **Workout Streaks:** Keep your motivation high with our streak system. See how many days in a row you can maintain your fitness routine!
+*   **Shareable Badges:** Earn and share milestone badges as you progress.
 *   Workout Logging (Exercise Type, Duration, Intensity)
 *   Automatic Calorie Calculation (via Formula in Flow - Can be switched to AI)
 *   Daily Goal Setting (Duration, Distance, Frequency, Calories) with Timeframes
