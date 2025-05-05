@@ -62,7 +62,7 @@ interface CommunityPost {
 // Updated schema to handle FileList for image uploads
 const postFormSchema = z.object({
   content: z.string().min(1, "Post cannot be empty.").max(500, "Post cannot exceed 500 characters."),
-  imageFile: z.instanceof(FileList).optional(), // Accept FileList, optional
+  imageFile: z.instanceof(FileList).optional().nullable(), // Accept FileList, optional, allow null
 });
 
 type PostFormValues = z.infer<typeof postFormSchema>;
@@ -141,7 +141,7 @@ export default function CommunityPage() {
     resolver: zodResolver(postFormSchema),
     defaultValues: {
       content: "",
-      imageFile: undefined, // Default to undefined
+      imageFile: null, // Default to null
     },
     mode: "onChange",
   });
@@ -151,14 +151,15 @@ export default function CommunityPage() {
     setIsSubmitting(true);
     let imageUrl: string | undefined = undefined;
 
-    // Handle file upload
+    // Handle file upload - Access file from data.imageFile
     if (data.imageFile && data.imageFile.length > 0) {
       const file = data.imageFile[0];
       // Optional: Add file size validation
-      if (file.size > 5 * 1024 * 1024) { // Example: 5MB limit
+      const MAX_FILE_SIZE_MB = 5;
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
            toast({
              title: "Image Too Large",
-             description: "Please upload an image smaller than 5MB.",
+             description: `Please upload an image smaller than ${MAX_FILE_SIZE_MB}MB.`,
              variant: "destructive",
            });
            setIsSubmitting(false);
@@ -192,7 +193,12 @@ export default function CommunityPage() {
 
     setPosts(prevPosts => [newPost, ...prevPosts]); // Add new post to the beginning
     toast({ title: "Post Shared!", description: "Your update is live on the community feed." });
-    form.reset({ content: "", imageFile: undefined }); // Reset form, explicitly clearing imageFile
+    form.reset({ content: "", imageFile: null }); // Reset form, explicitly clearing imageFile to null
+    // Clear the file input visually (optional, but good UX)
+    const fileInput = document.getElementById('imageFileInput') as HTMLInputElement | null;
+     if (fileInput) {
+         fileInput.value = '';
+     }
     setIsSubmitting(false);
   };
 
@@ -205,7 +211,7 @@ export default function CommunityPage() {
     const streakValue = streakData.currentStreak;
     // Pass form data (only content) and shared item separately
     handleAddPost(
-        { content: `Sharing my ${streakValue}-day workout streak! 🔥 Keeping the momentum going!` },
+        { content: `Sharing my ${streakValue}-day workout streak! 🔥 Keeping the momentum going!`, imageFile: null }, // Pass imageFile as null
         { type: 'streak', value: streakValue }
     );
   };
@@ -219,7 +225,7 @@ export default function CommunityPage() {
      }
       // Pass form data (only content) and shared item separately
       handleAddPost(
-        { content: `Proud to share my ${currentBadge.badge}! 💪 ${currentBadge.shareText}` },
+        { content: `Proud to share my ${currentBadge.badge}! 💪 ${currentBadge.shareText}`, imageFile: null }, // Pass imageFile as null
         {
           type: 'badge',
           value: currentBadge.badge,
@@ -233,7 +239,7 @@ export default function CommunityPage() {
    const handleShareGoal = (goal: { title: string; id: string }) => {
         // Pass form data (only content) and shared item separately
         handleAddPost(
-            { content: `Sharing my goal: "${goal.title}". Let's crush it! 🎯` },
+            { content: `Sharing my goal: "${goal.title}". Let's crush it! 🎯`, imageFile: null }, // Pass imageFile as null
             { type: 'goal', value: goal.title }
         );
    };
@@ -303,12 +309,13 @@ export default function CommunityPage() {
                        <FormField
                             control={form.control}
                             name="imageFile"
-                            render={({ field }) => ( // field doesn't include value/onChange directly for file inputs handled this way
+                            render={({ field }) => ( // field object is handled by react-hook-form for file inputs via `register`
                                 <FormItem>
                                     <FormLabel className="text-sm font-medium flex items-center gap-1"><ImageIcon className="h-4 w-4"/> Add Image (Optional, max 5MB)</FormLabel>
                                     <FormControl>
-                                        {/* Use the ref from form.register */}
+                                        {/* Use the ref from form.register and give it an ID */}
                                         <Input
+                                            id="imageFileInput" // Added ID for potential clearing
                                             type="file"
                                             accept="image/png, image/jpeg, image/gif" // Specify acceptable image types
                                             {...fileRef} // Spread the props from register
@@ -358,6 +365,7 @@ export default function CommunityPage() {
                                 fill={true} // Use fill instead of layout
                                 style={{objectFit:"cover"}} // Use style for objectFit
                                 className="transition-transform duration-300 ease-in-out group-hover:scale-105"
+                                data-ai-hint="fitness exercise workout" // Added AI hint
                              />
                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div> {/* Subtle overlay */}
                         </div>
